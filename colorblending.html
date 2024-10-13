@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGB Color Blending</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .color-block {
+            border: 1px solid #ccc;
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        #color-info {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 18px;
+        }
+
+        #color-info div {
+            margin-top: 10px;
+            width: 100px;
+            height: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>RGB Color Blending</h1>
+
+    <div id="color-info">
+        <p>RGB: <span id="rgb-value">N/A</span></p>
+        <p>Hex: <span id="hex-value">N/A</span></p>
+        <div id="color-preview"></div>
+    </div>
+
+    <input type="file" id="upload" accept="image/*">
+    <canvas id="canvas"></canvas>
+
+    <button id="reset-button">Reset</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const colorInfo = document.getElementById('color-info');
+        const rgbValue = document.getElementById('rgb-value');
+        const hexValue = document.getElementById('hex-value');
+        const colorPreview = document.getElementById('color-preview');
+        const resetButton = document.getElementById('reset-button');
+        let ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let imgData;
+
+        document.getElementById('upload').addEventListener('change', handleImageUpload);
+        resetButton.addEventListener('click', resetCanvas);
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                        // Add a click event listener to the canvas to get the pixel color
+                        canvas.addEventListener('click', (event) => {
+                            const rect = canvas.getBoundingClientRect();
+                            const x = event.clientX - rect.left;
+                            const y = event.clientY - rect.top;
+                            displayPixelColor(x, y);
+                        });
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function displayPixelColor(x, y) {
+            const pixel = ctx.getImageData(x, y, 1, 1).data;
+            const r = pixel[0];
+            const g = pixel[1];
+            const b = pixel[2];
+            const rgb = `rgb(${r},${g},${b})`;
+            const hex = rgbToHex(r, g, b);
+
+            rgbValue.textContent = rgb;
+            hexValue.textContent = hex;
+            colorPreview.style.backgroundColor = rgb;
+        }
+
+        function rgbToHex(r, g, b) {
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+        }
+
+        // Function to reset the canvas and clear image data
+        function resetCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            rgbValue.textContent = 'N/A';
+            hexValue.textContent = 'N/A';
+            colorPreview.style.backgroundColor = 'transparent';
+            canvas.width = 0;
+            canvas.height = 0;
+        }
+    </script>
+</body>
+</html><!--  -->

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Picker and Mixer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      * {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: #333;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.container:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.color-controls, .color-mixer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.color-controls label, .color-mixer label {
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    font-size: 15px;
+}
+
+input[type="range"], input[type="number"] {
+    flex: 1;
+    margin: 0 10px;
+    background-color: #eaeaea;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    background-color: #42a5f5;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+input[type="number"] {
+    width: 70px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+#colorBox, #mixedColorBox, #gradientBox, #selectedColorBox {
+    width: 160px;
+    height: 160px;
+    margin: 15px 0;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.5s ease, transform 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button {
+    margin: 15px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #6A11CB, #2575FC);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #7F11CB, #1B5EDC);
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.color-history-container {
+    text-align: center;
+}
+
+#colorHistory {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.history-color {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    margin: 7px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.history-color:hover {
+    transform: scale(1.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.color-chart {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.color-box {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #333;
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    border-radius: 10px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+}
+
+.color-box:hover {
+    transform: scale(1.15);
+    border-color: #666;
+}
+
+.selected-color-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 25px;
+}
+
+#selectedColorBox {
+    width: 160px;
+    height: 160px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#selectedColorBox:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Picker and Mixer</h1>
+
+        <div class="color-controls">
+            <h3>Select RGB values:</h3>
+            <label>Red: 
+    <input type="range" id="red" min="0" max="255" oninput="updateColor()"> 
+    <input type="number" id="redVal" min="0" max="255" oninput="syncSlider('red', this.value)">
+</label>
+<label>Green: 
+    <input type="range" id="green" min="0" max="255" oninput="updateColor()"> 
+    <input type="number" id="greenVal" min="0" max="255" oninput="syncSlider('green', this.value)">
+</label>
+<label>Blue: 
+    <input type="range" id="blue" min="0" max="255" oninput="updateColor()"> 
+    <input type="number" id="blueVal" min="0" max="255" oninput="syncSlider('blue', this.value)">
+</label>
+            <div id="colorBox"></div>
+            <p id="colorCode">HEX: #000000</p>
+            <p id="rgbValue">RGB: (0, 0, 0)</p>
+            <p id="colorName">Color Name: Unknown</p>
+            <div>
+                
+                <button onclick="addToHistory()">Add to History</button>
+                <button id="randomButton">Random Color</button>
+                <button onclick="resetColor()">Reset</button>
+            </div>
+        </div>
+
+        <h3>Color History</h3>
+        <div class="color-history-container">
+            <div id="colorHistory"></div>
+        </div>
+
+        <div class="color-mixer">
+            <h2>Mix Colors</h2>
+            <label>Select Color 1     <input type="color" id="color1" value="#ff0000"></label>
+            <label>Select Color 2     <input type="color" id="color2" value="#0000ff"></label>
+            <button onclick="mixColors()">Mix Colors</button>
+            <div id="mixedColorBox"></div>
+            <p id="mixedColorCode">HEX: #000000, RGB: (0, 0, 0)</p>
+            <button id="gradientButton">Generate Gradient</button>
+            <div id="gradientBox" style="width: 100%; height: 50px; margin-top: 20px;"></div>
+        </div>
+
+        <h3>RGB Color Code Chart</h3>
+        <div class="color-chart">
+            <div class="color-box" style="background-color: rgb(255, 0, 0);" title="HEX: #FF0000, RGB: (255, 0, 0)" onclick="selectColor(255, 0, 0)"></div>
+            <div class="color-box" style="background-color: rgb(0, 255, 0);" title="HEX: #00FF00, RGB: (0, 255, 0)" onclick="selectColor(0, 255, 0)"></div>
+            <div class="color-box" style="background-color: rgb(0, 0, 255);" title="HEX: #0000FF, RGB: (0, 0, 255)" onclick="selectColor(0, 0, 255)"></div>
+            <div class="color-box" style="background-color: rgb(255, 255, 0);" title="HEX: #FFFF00, RGB: (255, 255, 0)" onclick="selectColor(255, 255, 0)"></div>
+            <div class="color-box" style="background-color: rgb(0, 255, 255);" title="HEX: #00FFFF, RGB: (0, 255, 255)" onclick="selectColor(0, 255, 255)"></div>
+            <div class="color-box" style="background-color: rgb(255, 0, 255);" title="HEX: #FF00FF, RGB: (255, 0, 255)" onclick="selectColor(255, 0, 255)"></div>
+            <div class="color-box" style="background-color: rgb(255, 255, 255);" title="HEX: #FFFFFF, RGB: (255, 255, 255)" onclick="selectColor(255, 255, 255)"></div>
+            <div class="color-box" style="background-color: rgb(0, 0, 0);" title="HEX: #000000, RGB: (0, 0, 0)" onclick="selectColor(0, 0, 0)"></div>
+            <div class="color-box" style="background-color: rgb(128, 0, 0);" title="HEX: #800000, RGB: (128, 0, 0)" onclick="selectColor(128, 0, 0)"></div>
+            <div class="color-box" style="background-color: rgb(128, 128, 0);" title="HEX: #808000, RGB: (128, 128, 0)" onclick="selectColor(128, 128, 0)"></div>
+            <div class="color-box" style="background-color: rgb(0, 128, 0);" title="HEX: #008000, RGB: (0, 128, 0)" onclick="selectColor(0, 128, 0)"></div>
+            <div class="color-box" style="background-color: rgb(0, 128, 128);" title="HEX: #008080, RGB: (0, 128, 128)" onclick="selectColor(0, 128, 128)"></div>
+              <div class="color-box" style="background-color: rgb(0, 0, 128);" title="HEX: #000080, RGB: (0, 0, 128)" onclick="selectColor(0, 0, 128)"></div>
+            <div class="color-box" style="background-color: rgb(128, 0, 128);" title="HEX: #800080, RGB: (128, 0, 128)" onclick="selectColor(128, 0, 128)"></div>
+            <div class="color-box" style="background-color: rgb(75, 0, 130);" title="HEX: #4B0082, RGB: (75, 0, 130)" onclick="selectColor(75, 0, 130)"></div>
+            <div class="color-box" style="background-color: rgb(255, 20, 147);" title="HEX: #FF1493, RGB: (255, 20, 147)" onclick="selectColor(255, 20, 147)"></div>
+            <div class="color-box" style="background-color: rgb(255, 215, 0);" title="HEX: #FFD700, RGB: (255, 215, 0)" onclick="selectColor(255, 215, 0)"></div>
+             <div class="color-box" style="background-color: rgb(255, 165, 0);" title="HEX: #FFA500, RGB: (255, 165, 0)" onclick="selectColor(255, 165, 0)"></div>
+
+</div>
+        
+
+        <div class="selected-color-container">
+    <div id="selectedColorBox"></div>
+    <p id="selectedColorCode">Selected HEX: #000000</p>
+    <p id="selectedRgbValue">Selected RGB: (0, 0, 0)</p>
+    <p id="selectedColorName">Selected Color Name: Unknown</p>
+</div>
+
+    <script>
+        const colorNames = {
+    "255,0,0": "Red",
+    "0,255,0": "Green",
+    "0,0,255": "Blue",
+    "255,255,0": "Yellow",
+    "0,255,255": "Cyan",
+    "255,0,255": "Magenta",
+    "255,255,255": "White",
+    "0,0,0": "Black",
+    "128,0,0": "Maroon",
+    "128,128,0": "Olive",
+    "0,128,0": "Dark Green",
+    "0,128,128": "Teal",
+    "0,0,128": "Navy",
+    "128,0,128": "Purple",
+    "75,0,130": "Indigo",
+    "255,20,147": "Deep Pink",
+    "255,215,0": "Gold", 
+    "255,165,0": " Orange", 
+    // Add more color names as needed
+};
+
+function getColorName(r, g, b) {
+    const rgbKey = `${r},${g},${b}`;
+    return colorNames[rgbKey] || "Unknown";
+}
+
+function updateColor() {
+    const r = document.getElementById('red').value;
+    const g = document.getElementById('green').value;
+    const b = document.getElementById('blue').value;
+    const colorBox = document.getElementById('colorBox');
+    const colorCode = document.getElementById('colorCode');
+    const rgbValue = document.getElementById('rgbValue');
+
+    colorBox.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    colorCode.innerText = `HEX: #${((1 << 24) + (r << 16) + (g << 8) + +b).toString(16).slice(1).toUpperCase()}`;
+    rgbValue.innerText = `RGB: (${r}, ${g}, ${b})`;
+
+    // Update the color name
+    const colorName = getColorName(r, g, b);
+    document.getElementById('colorName').innerText = `Color Name: ${colorName}`;
+
+    // Update number inputs
+    document.getElementById('redVal').value = r;
+    document.getElementById('greenVal').value = g;
+    document.getElementById('blueVal').value = b;
+}
+
+function syncSlider(color, value) {
+    document.getElementById(color).value = value;
+    updateColor();
+}
+
+function copyToClipboard() {
+    const colorCode = document.getElementById('colorCode').innerText;
+    navigator.clipboard.writeText(colorCode.split(': ')[1]);
+    alert('Copied: ' + colorCode);
+}
+
+function addToHistory() {
+    const color = document.getElementById('colorBox').style.backgroundColor;
+    const historyDiv = document.getElementById('colorHistory');
+    const colorDiv = document.createElement('div');
+    colorDiv.classList.add('history-color');
+    colorDiv.style.backgroundColor = color;
+    colorDiv.onclick = () => selectColor(...color.match(/\d+/g).map(Number));
+    historyDiv.appendChild(colorDiv);
+}
+document.getElementById('randomButton').onclick = function() {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    document.getElementById('red').value = r;
+    document.getElementById('green').value = g;
+    document.getElementById('blue').value = b;
+    updateColor();
+};
+
+function resetColor() {
+    document.getElementById('red').value = 0;
+    document.getElementById('green').value = 0;
+    document.getElementById('blue').value = 0;
+    updateColor();
+}
+
+function mixColors() {
+    const color1 = document.getElementById('color1').value;
+    const color2 = document.getElementById('color2').value;
+    const r1 = parseInt(color1.slice(1, 3), 16);
+    const g1 = parseInt(color1.slice(3, 5), 16);
+    const b1 = parseInt(color1.slice(5, 7), 16);
+    const r2 = parseInt(color2.slice(1, 3), 16);
+    const g2 = parseInt(color2.slice(3, 5), 16);
+    const b2 = parseInt(color2.slice(5, 7), 16);
+
+    const mixedR = Math.round((r1 + r2) / 2);
+    const mixedG = Math.round((g1 + g2) / 2);
+    const mixedB = Math.round((b1 + b2) / 2);
+    const mixedColor = `rgb(${mixedR}, ${mixedG}, ${mixedB})`;
+
+    document.getElementById('mixedColorBox').style.backgroundColor = mixedColor;
+    document.getElementById('mixedColorCode').innerText = `HEX: #${((1 << 24) + (mixedR << 16) + (mixedG << 8) + mixedB).toString(16).slice(1).toUpperCase()}, RGB: (${mixedR}, ${mixedG}, ${mixedB})`;
+}
+
+function selectColor(r, g, b) {
+    document.getElementById('selectedColorBox').style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    document.getElementById('selectedColorCode').innerText = `Selected HEX: #${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    document.getElementById('selectedRgbValue').innerText = `Selected RGB: (${r}, ${g}, ${b})`;
+    document.getElementById('selectedColorName').innerText = `Selected Color Name: ${getColorName(r, g, b)}`;
+}
+
+document.getElementById('gradientButton').onclick = function() {
+    const color1 = document.getElementById('color1').value;
+    const color2 = document.getElementById('color2').value;
+    document.getElementById('gradientBox').style.background = `linear-gradient(${color1}, ${color2})`;
+};
+    </script>
+</body>
+</html>       
